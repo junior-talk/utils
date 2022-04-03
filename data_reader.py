@@ -122,7 +122,7 @@ class ParallelFileReader(keras.utils.Sequence):
                 buffer = [_[self._buffer_size:] for _ in buffer]
 
     def start(self):
-        self.stop()
+        assert not self._running.value, 'already running, call stop() first.'
         self._idx = 0
         self._running.value = True
 
@@ -170,6 +170,10 @@ class ParallelFileReader(keras.utils.Sequence):
 
     def __len__(self):
         return (self._data_size + self._batch_size - 1) // self._batch_size
+
+    def on_epoch_end(self):
+        self.stop()
+        self.start()
 
     def __getitem__(self, idx):
         assert self._running.value
